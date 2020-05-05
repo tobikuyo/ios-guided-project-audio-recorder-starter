@@ -7,8 +7,11 @@
 //
 
 import UIKit
+import AVFoundation
 
 class AudioRecorderController: UIViewController {
+
+    // MARK: - Outlets
     
     @IBOutlet var playButton: UIButton!
     @IBOutlet var recordButton: UIButton!
@@ -16,7 +19,17 @@ class AudioRecorderController: UIViewController {
     @IBOutlet var timeRemainingLabel: UILabel!
     @IBOutlet var timeSlider: UISlider!
     @IBOutlet var audioVisualizer: AudioVisualizer!
-    
+
+    // MARK: - Properties
+
+    var audioPlayer: AVAudioPlayer?
+    // We can only play DRM-free music (can't use Apple Music)
+    // Digital Rights Management - encrypted so you can't see actual audio dataav
+
+    var isPlaying: Bool {
+        audioPlayer?.isPlaying ?? false
+    }
+
     private lazy var timeIntervalFormatter: DateComponentsFormatter = {
         // NOTE: DateComponentFormatter is good for minutes/hours/seconds
         // DateComponentsFormatter is not good for milliseconds, use DateFormatter instead)
@@ -82,9 +95,11 @@ class AudioRecorderController: UIViewController {
     // MARK: - Playback
     
     func loadAudio() {
+        // Bundle is read-only (Download from the App Store or install from XCode)
+        // documents directory is read-write
         let songURL = Bundle.main.url(forResource: "piano", withExtension: "mp3")!
         
-        
+        audioPlayer = try? AVAudioPlayer(contentsOf: songURL)
     }
     
     /*
@@ -96,14 +111,13 @@ class AudioRecorderController: UIViewController {
     */
     
     func play() {
-        
+        audioPlayer?.play()
     }
     
     func pause() {
-        
+        audioPlayer?.pause()
     }
-    
-    
+
     // MARK: - Recording
     
     func createNewRecordingURL() -> URL {
@@ -161,7 +175,11 @@ class AudioRecorderController: UIViewController {
     // MARK: - Actions
     
     @IBAction func togglePlayback(_ sender: Any) {
-        
+        if isPlaying { // isPlaying == true
+            pause()
+        } else {
+            play()
+        }
     }
     
     @IBAction func updateCurrentTime(_ sender: UISlider) {
