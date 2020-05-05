@@ -22,9 +22,14 @@ class AudioRecorderController: UIViewController {
 
     // MARK: - Properties
 
-    var audioPlayer: AVAudioPlayer?
     // We can only play DRM-free music (can't use Apple Music)
-    // Digital Rights Management - encrypted so you can't see actual audio dataav
+    // Digital Rights Management - encrypted so you can't see actual audio data
+    var audioPlayer: AVAudioPlayer? {
+        didSet {
+            // Using a didSet allows us to make sure we don't forget to set the delegate
+            audioPlayer?.delegate = self
+        }
+    }
 
     var isPlaying: Bool {
         audioPlayer?.isPlaying ?? false
@@ -40,8 +45,7 @@ class AudioRecorderController: UIViewController {
         formatting.allowedUnits = [.minute, .second]
         return formatting
     }()
-    
-    
+
     // MARK: - View Controller Lifecycle
     
     override func viewDidLoad() {
@@ -54,8 +58,12 @@ class AudioRecorderController: UIViewController {
                                                                    weight: .regular)
         
         loadAudio()
+        updateViews()
     }
-    
+
+    private func updateViews() {
+        playButton.isSelected = isPlaying
+    }
     
     // MARK: - Timer
     
@@ -112,10 +120,12 @@ class AudioRecorderController: UIViewController {
     
     func play() {
         audioPlayer?.play()
+        updateViews()
     }
     
     func pause() {
         audioPlayer?.pause()
+        updateViews()
     }
 
     // MARK: - Recording
@@ -191,3 +201,16 @@ class AudioRecorderController: UIViewController {
     }
 }
 
+extension AudioRecorderController: AVAudioPlayerDelegate {
+    func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+        updateViews()
+    }
+
+    func audioPlayerDecodeErrorDidOccur(_ player: AVAudioPlayer, error: Error?) {
+        if let error = error {
+            print("Audio Player Error: \(error)")
+        }
+
+        updateViews()
+    }
+}
