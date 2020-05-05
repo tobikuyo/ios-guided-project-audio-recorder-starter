@@ -61,6 +61,11 @@ class AudioRecorderController: UIViewController {
         updateViews()
     }
 
+    deinit {
+        // Protect us from a crash if the time is still going when the user navigates away from the timer UI
+        cancelTimer()
+    }
+
     private func updateViews() {
         playButton.isSelected = isPlaying
 
